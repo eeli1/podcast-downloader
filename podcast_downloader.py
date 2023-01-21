@@ -2,13 +2,22 @@ import feedparser
 import requests
 import os
 import sys
+
+def downland(url,file_path ):
+    if not os.exists(file_path):
+        os.system("wget {} -O {}".format(url,file_path))
     
 def get_audio(url, path, title):
     filename = title.replace(' ','_')+".mp3"
     filename = filename.replace("/","")
-    os.system("cd {} && wget {}".format(path,url))
     file_path = os.path.join(path, filename)
-    os.rename(os.path.join(path,url.split("/")[-1]), file_path)
+    downland(url,file_path)
+    
+def get_audio_url(links):
+    for e in links:
+        if "audio" in e["type"]:
+            return e["href"]
+    raise Exception("no audio found")
 
 def download_rss(url, base_path):
     feed = feedparser.parse(url)
@@ -16,13 +25,15 @@ def download_rss(url, base_path):
     path = os.path.join(base_path,title.replace(' ','_'))
     os.mkdir(path)
 
+    downland(url,os.path.join(path,"rss"))
+
     image_url =  feed["feed"]["image"]["href"]
     image_name = title.replace(' ','_')+".jpg"
-    r = requests.get(image_url, allow_redirects=True)
-    open(os.path.join(path,image_name), 'wb').write(r.content)
+    image_path = os.path.join(path,image_name)
+    downland(image_url,image_path)
 
     for e in feed["entries"]:
-        audio_url = e["links"][1]["href"]
+        audio_url = get_audio_url(e["links"])
         audio_title = e["title"]
         get_audio(audio_url, path, audio_title)
 
