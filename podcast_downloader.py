@@ -9,8 +9,9 @@ def downland(url, path, filename):
 
 
 def get_audio(url, path, title):
-    filename = title.replace(' ', '_')+".mp3"
+    filename = title.replace(' ', '_')
     filename = filename.replace("/", "")
+    filename = filename + ".mp3"
     downland(url, path, filename)
 
 
@@ -18,7 +19,7 @@ def get_audio_url(links):
     for e in links:
         if "audio" in e["type"]:
             return e["href"]
-    raise Exception("no audio found")
+    return ""
 
 
 def download_rss(url, base_path):
@@ -39,7 +40,8 @@ def download_rss(url, base_path):
     for e in feed["entries"]:
         audio_url = get_audio_url(e["links"])
         audio_title = e["title"]
-        get_audio(audio_url, path, audio_title)
+        if audio_url != "":
+            get_audio(audio_url, path, audio_title)
 
 
 def main(argv):
